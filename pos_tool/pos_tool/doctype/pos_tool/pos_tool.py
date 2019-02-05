@@ -12,18 +12,14 @@ from frappe.utils import money_in_words
 class POSTool(Document):
 	def on_submit(self):
 		control_amount = frappe.db.get_single_value('POS Amount Setting', 'control_amount')
-		frappe.msgprint(frappe._("Control Amount : {0}").format(control_amount))
 		items = []
 		amount = 0
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
 				amount = amount + d.rate
-				frappe.msgprint(frappe._("Item Rate : {0}").format(d.rate))
-				frappe.msgprint(frappe._("Amount : {0}").format(amount))
 				if(amount > control_amount):
 					amount = amount-d.rate
-					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount))
 					if(last_qty>0):
 						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 					else:
@@ -63,6 +59,15 @@ class POSTool(Document):
 			})
 			sales_invoice.insert(ignore_permissions=True)
 			sales_invoice.save()
+
+	def submit_all_invoice(self):
+		for d in self.created_sales_invoice_using_pos_tool:
+			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
+			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
+			sv.docstatus = 1
+			sv.update_modified=False
+			sv.save()
+			sv.submit()
 
 @frappe.whitelist(allow_guest=True)
 def getStockBalance(item_code, warehouse):
