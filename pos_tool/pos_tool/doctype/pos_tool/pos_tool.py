@@ -14,16 +14,16 @@ class POSTool(Document):
 		control_amount = frappe.db.get_single_value('POS Amount Setting', 'control_amount')
 		frappe.msgprint(frappe._("Control Amount : {0}").format(control_amount))
 		items = []
-		amount = 0
+		amount_1 = 0
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
-				amount = amount + d.rate
+				amount_1 = amount_1 + d.rate
 				frappe.msgprint(frappe._("Item Rate : {0}").format(d.rate))
-				frappe.msgprint(frappe._("Amount : {0}").format(amount))
-				if(1 > 2):
-					amount = amount-d.rate
-					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount))
+				frappe.msgprint(frappe._("Amount : {0}").format(amount_1))
+				if(amount_1 > control_amount):
+					amount_1 = amount_1-d.rate
+					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount_1))
 					if(last_qty>0):
 						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 					else:
@@ -36,14 +36,14 @@ class POSTool(Document):
 					"base_discount_amount":self.additional_discount_amount,
 					"additional_discount_percentage":self.additional_discount_percentage,
 					"apply_discount_on":"Net Total",
-					"total":amount,
+					"total":amount_1,
 					"taxes_and_charges":self.taxes,
 					"created_from":self.name,
 					"items": items
 					})
 					sales_invoice.insert(ignore_permissions=True)
 					sales_invoice.save()
-					amount = d.rate
+					amount_1 = d.rate
 					items = []
 			if(last_qty>0):
 				items.append({"item_code": d.item_code,"qty": d.qty-last_qty,"rate": d.rate,"warehouse":d.warehouse})
@@ -51,12 +51,12 @@ class POSTool(Document):
 				items.append({"item_code": d.item_code,"qty": d.qty,"rate": d.rate,"warehouse":d.warehouse})
 			last_qty = -1
 
-		if(amount > 0):
+		if(amount_1 > 0):
 			sales_invoice = frappe.get_doc({
 			"doctype": "Sales Invoice", 
 			"customer": self.customer_name, 
 			"posting_date": self.posting_date,
-			"total":amount,
+			"total":amount_1,
 			"taxes_and_charges":self.taxes,
 			"created_from":self.name,
 			"items": items
