@@ -12,13 +12,14 @@ from frappe.utils import money_in_words
 class POSTool(Document):
 	def on_submit(self):
 		control_amount = frappe.db.get_single_value('POS Amount Setting', 'control_amount')
+		value = int(control_amount)
 		items = []
 		amount = 0
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
 				amount = amount + d.rate
-				if(amount > control_amount):
+				if(amount > value):
 					amount = amount-d.rate
 					if(last_qty>0):
 						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
