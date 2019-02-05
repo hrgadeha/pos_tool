@@ -18,18 +18,17 @@ class POSTool(Document):
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
-				frappe.msgprint(frappe._("I : {0}").format(i))
-				frappe.msgprint(frappe._("Qty : {0}").format(d.qty))
 				amount = amount + d.rate
+				frappe.msgprint(frappe._("Item Rate : {0}").format(d.rate))
+				frappe.msgprint(frappe._("Amount : {0}").format(amount))
 				if(amount > control_amount):
 					amount = amount-d.rate
-					frappe.msgprint(frappe._("Amount : {0}").format(amount))
+					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount))
 					if(last_qty>0):
 						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 					else:
 						items.append({"item_code": d.item_code,"qty": i,"rate": d.rate,"warehouse":d.warehouse})
 					last_qty = i;
-					frappe.msgprint(frappe._("Last Qty : {0}").format(last_qty))
 					sales_invoice = frappe.get_doc({
 					"doctype": "Sales Invoice", 
 					"customer": self.customer_name, 
