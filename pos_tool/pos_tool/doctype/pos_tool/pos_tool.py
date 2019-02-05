@@ -18,6 +18,8 @@ class POSTool(Document):
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
+				frappe.msgprint(frappe._("I : {0}").format(i))
+				frappe.msgprint(frappe._("Qty : {0}").format(d.qty))
 				amount = amount + d.rate
 				if(amount > control_amount):
 					amount = amount-d.rate
@@ -63,14 +65,14 @@ class POSTool(Document):
 			sales_invoice.insert(ignore_permissions=True)
 			sales_invoice.save()
 
-	def submit_all_invoice(self):
-		for d in self.created_sales_invoice_using_pos_tool:
-			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
-			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
-			sv.docstatus = 1
-			sv.update_modified=False
-			sv.save()
-			sv.submit()
+#	def submit_all_invoice(doc):
+#		for d in self.created_sales_invoice_using_pos_tool:
+#			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
+#			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
+#			sv.docstatus = 1
+#			sv.update_modified=False
+#			sv.save()
+#			sv.submit()
 
 
 @frappe.whitelist(allow_guest=True)
