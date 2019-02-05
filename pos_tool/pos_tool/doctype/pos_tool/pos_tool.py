@@ -14,16 +14,16 @@ class POSTool(Document):
 		control_amount = frappe.db.get_single_value('POS Amount Setting', 'control_amount')
 		frappe.msgprint(frappe._("Control Amount : {0}").format(control_amount))
 		items = []
-		amount_1 = 0
+		amount = 0
 		last_qty = -1
 		for d in self.pos_tool_item:
 			for i in range(d.qty):
-				amount_1 = amount_1 + d.rate
+				amount = amount + d.rate
 				frappe.msgprint(frappe._("Item Rate : {0}").format(d.rate))
-				frappe.msgprint(frappe._("Amount : {0}").format(amount_1))
-				if(amount_1 > control_amount):
-					amount_1 = amount_1-d.rate
-					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount_1))
+				frappe.msgprint(frappe._("Amount : {0}").format(amount))
+				if(amount > control_amount):
+					amount = amount-d.rate
+					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount))
 					if(last_qty>0):
 						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 					else:
@@ -36,14 +36,14 @@ class POSTool(Document):
 					"base_discount_amount":self.additional_discount_amount,
 					"additional_discount_percentage":self.additional_discount_percentage,
 					"apply_discount_on":"Net Total",
-					"total":amount_1,
+					"total":amount,
 					"taxes_and_charges":self.taxes,
 					"created_from":self.name,
 					"items": items
 					})
 					sales_invoice.insert(ignore_permissions=True)
 					sales_invoice.save()
-					amount_1 = d.rate
+					amount = d.rate
 					items = []
 			if(last_qty>0):
 				items.append({"item_code": d.item_code,"qty": d.qty-last_qty,"rate": d.rate,"warehouse":d.warehouse})
@@ -51,28 +51,18 @@ class POSTool(Document):
 				items.append({"item_code": d.item_code,"qty": d.qty,"rate": d.rate,"warehouse":d.warehouse})
 			last_qty = -1
 
-		if(amount_1 > 0):
+		if(amount > 0):
 			sales_invoice = frappe.get_doc({
 			"doctype": "Sales Invoice", 
 			"customer": self.customer_name, 
 			"posting_date": self.posting_date,
-			"total":amount_1,
+			"total":amount,
 			"taxes_and_charges":self.taxes,
 			"created_from":self.name,
 			"items": items
 			})
 			sales_invoice.insert(ignore_permissions=True)
 			sales_invoice.save()
-
-#	def submit_all_invoice(doc):
-#		for d in self.created_sales_invoice_using_pos_tool:
-#			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
-#			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
-#			sv.docstatus = 1
-#			sv.update_modified=False
-#			sv.save()
-#			sv.submit()
-
 
 @frappe.whitelist(allow_guest=True)
 def getStockBalance(item_code, warehouse):
