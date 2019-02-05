@@ -12,6 +12,7 @@ from frappe.utils import money_in_words
 class POSTool(Document):
 	def on_submit(self):
 		control_amount = frappe.db.get_single_value('POS Amount Setting', 'control_amount')
+		frappe.msgprint(frappe._("Control Amount : {0}").format(control_amount))
 		items = []
 		amount = 0
 		last_qty = -1
