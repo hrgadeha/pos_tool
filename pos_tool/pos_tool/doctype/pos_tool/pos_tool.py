@@ -21,7 +21,7 @@ class POSTool(Document):
 				amount = amount + d.rate
 				frappe.msgprint(frappe._("Item Rate : {0}").format(d.rate))
 				frappe.msgprint(frappe._("Amount : {0}").format(amount))
-				if(amount > control_amount):
+				if(1 > 2):
 					amount = amount-d.rate
 					frappe.msgprint(frappe._("Submitted Amount : {0}").format(amount))
 					if(last_qty>0):
