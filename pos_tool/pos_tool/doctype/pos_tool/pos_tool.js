@@ -264,15 +264,34 @@ name: frm.doc.name
 },
 callback:function(r){
 	var len=r.message.length;
-	console.log(r)
 	for (var i=0;i<len;i++){
 	        var row = frm.add_child("created_sales_invoice_using_pos_tool");
 		row.sales_invoice = r.message[i][0];
-		row.bill_amount = r.message[i][1];
+		row.status = r.message[i][1];
+		row.tax_template = r.message[i][2];
+		row.bill_amount = r.message[i][3];
 	}
 		cur_frm.refresh();
 	}
     });
+}
+});
+
+frappe.ui.form.on("POS Tool Item",{
+	"get_serial_no" : function (frm, cdt, cdn){
+	var d = locals[cdt][cdn];
+	frappe.call({
+		"method": "pos_tool.pos_tool.doctype.pos_tool.pos_tool.get_serial_no",
+		args: {
+			item_code: d.item_code,
+			warehouse: d.warehouse
+		},
+		callback:function(r){
+		var myJSON = JSON.stringify(r);
+		var myJSONnew = myJSON.match(/\d+/g).map(Number);
+		msgprint("Serial Number of Item : "+d.item_code+" In Warehouse "+d.warehouse+" are : " +myJSONnew+ ". Please Select " +d.qty+" Serial Numbers");
+;}
+});
 }
 });
 
@@ -281,3 +300,14 @@ cur_frm.cscript.submit_all_invoice = function(doc, cdt, cdn) {
 			function(r, rt) {
 			});
 }
+
+
+/*cur_frm.set_query("select_serial_number", "pos_tool_item", function(doc, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return{
+		filters: [
+			["Serial No", "warehouse", "=", d.warehouse],
+                	["Serial No", "item_code", "=", d.item_code]
+		]
+	}
+});*/
