@@ -30,9 +30,6 @@ class POSTool(Document):
 					"doctype": "Sales Invoice", 
 					"customer": self.customer_name, 
 					"posting_date": self.posting_date,
-					"base_discount_amount":self.additional_discount_amount,
-					"additional_discount_percentage":self.additional_discount_percentage,
-					"apply_discount_on":"Net Total",
 					"total":amount,
 					"taxes_and_charges":self.taxes,
 					"created_from":self.name,
@@ -80,7 +77,7 @@ def getStockBalance(item_code, warehouse):
 
 @frappe.whitelist(allow_guest=True)
 def insert_data(doctype, name):
-	query="select name,status,taxes_and_charges,grand_total from `tabSales Invoice` where docstatus = 0 and created_from = '"+str(name)+"';"
+	query="select name,status,taxes_and_charges,grand_total from `tabSales Invoice` where created_from = '"+str(name)+"';"
 	li=[]
 	dic=frappe.db.sql(query, as_dict=True)
 	for i in dic:
