@@ -277,37 +277,8 @@ callback:function(r){
 }
 });
 
-frappe.ui.form.on("POS Tool Item",{
-	"get_serial_no" : function (frm, cdt, cdn){
-	var d = locals[cdt][cdn];
-	frappe.call({
-		"method": "pos_tool.pos_tool.doctype.pos_tool.pos_tool.get_serial_no",
-		args: {
-			item_code: d.item_code,
-			warehouse: d.warehouse
-		},
-		callback:function(r){
-		var myJSON = JSON.stringify(r);
-		var myJSONnew = myJSON.match(/\d+/g).map(Number);
-		msgprint("Serial Number of Item : "+d.item_code+" In Warehouse "+d.warehouse+" are : " +myJSONnew+ ". Please Select " +d.qty+" Serial Numbers");
-;}
-});
-}
-});
-
 cur_frm.cscript.submit_all_invoice = function(doc, cdt, cdn) {
 		return $c('runserverobj', {'method':'submit_all_invoice', 'docs':doc},
 			function(r, rt) {
 			});
 }
-
-
-/*cur_frm.set_query("select_serial_number", "pos_tool_item", function(doc, cdt, cdn) {
-	var d = locals[cdt][cdn];
-	return{
-		filters: [
-			["Serial No", "warehouse", "=", d.warehouse],
-                	["Serial No", "item_code", "=", d.item_code]
-		]
-	}
-});*/

@@ -22,9 +22,9 @@ class POSTool(Document):
 				if(amount > value):
 					amount = amount-d.rate
 					if(last_qty>0):
-						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse,"serial_no":d.serial_no})
+						items.append({"item_code": d.item_code,"qty": i-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 					else:
-						items.append({"item_code": d.item_code,"qty": i,"rate": d.rate,"warehouse":d.warehouse,"serial_no":d.serial_no})
+						items.append({"item_code": d.item_code,"qty": i,"rate": d.rate,"warehouse":d.warehouse})
 					last_qty = i;
 					sales_invoice = frappe.get_doc({
 					"doctype": "Sales Invoice", 
@@ -36,7 +36,6 @@ class POSTool(Document):
 					"total":amount,
 					"taxes_and_charges":self.taxes,
 					"created_from":self.name,
-					"update_stock":self.update_stock,
 					"items": items
 					})
 					sales_invoice.insert(ignore_permissions=True)
@@ -44,9 +43,9 @@ class POSTool(Document):
 					amount = d.rate
 					items = []
 			if(last_qty>0):
-				items.append({"item_code": d.item_code,"qty": d.qty-last_qty,"rate": d.rate,"warehouse":d.warehouse,"serial_no":d.serial_no})
+				items.append({"item_code": d.item_code,"qty": d.qty-last_qty,"rate": d.rate,"warehouse":d.warehouse})
 			else:
-				items.append({"item_code": d.item_code,"qty": d.qty,"rate": d.rate,"warehouse":d.warehouse,"serial_no":d.serial_no})
+				items.append({"item_code": d.item_code,"qty": d.qty,"rate": d.rate,"warehouse":d.warehouse})
 			last_qty = -1
 
 		if(amount > 0):
@@ -57,7 +56,6 @@ class POSTool(Document):
 			"total":amount,
 			"taxes_and_charges":self.taxes,
 			"created_from":self.name,
-			"update_stock":self.update_stock,
 			"items": items
 			})
 			sales_invoice.insert(ignore_permissions=True)
@@ -68,7 +66,6 @@ class POSTool(Document):
 			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
 			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
 			sv.docstatus = 1
-			sv.update_modified=False
 			sv.save()
 			sv.submit()
 
@@ -90,16 +87,3 @@ def insert_data(doctype, name):
 		name,status,taxes_and_charges,grand_total=i['name'],i['status'],i['taxes_and_charges'],i['grand_total']
 		li.append([name,status,taxes_and_charges,grand_total])
 	return li
-
-@frappe.whitelist(allow_guest=True)
-def getSerialNumber(item_code, warehouse):
-	serial_no = frappe.db.sql("""select count(name) from `tabSerial No`
-		where item_code=%s and warehouse=%s limit 1""",(item_code,warehouse))
-	return serial_no[0][0] if serial_no else 0.0
-
-@frappe.whitelist(allow_guest=True)
-def get_serial_no(item_code,warehouse):
-	serial = []
-	serial_no = frappe.get_list('Serial No', filters={'item_code':item_code , 'warehouse': warehouse}, fields=['name'])
-	serial.append(serial_no)
-	return serial
