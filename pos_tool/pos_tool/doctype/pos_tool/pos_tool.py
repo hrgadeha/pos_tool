@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from frappe import msgprint
 from frappe.model.document import Document
 from frappe.utils import money_in_words
@@ -35,8 +36,12 @@ class POSTool(Document):
 					"created_from":self.name,
 					"items": items
 					})
+					if sales_invoice.taxes_and_charges:
+						getTax(sales_invoice)
+					sales_invoice.calculate_taxes_and_totals()
 					sales_invoice.insert(ignore_permissions=True)
-					sales_invoice.save()
+					#calculate_taxes_and_totals()
+					#sales_invoice.save()
 					amount = d.rate
 					items = []
 			if(last_qty>0):
@@ -46,7 +51,7 @@ class POSTool(Document):
 			last_qty = -1
 
 		if(amount > 0):
-			sales_invoice = frappe.get_doc({
+			sales_invoice= frappe.get_doc({
 			"doctype": "Sales Invoice", 
 			"customer": self.customer_name, 
 			"posting_date": self.posting_date,
@@ -55,8 +60,12 @@ class POSTool(Document):
 			"created_from":self.name,
 			"items": items
 			})
+			if sales_invoice.taxes_and_charges:
+				getTax(sales_invoice)
+         		sales_invoice.calculate_taxes_and_totals()
 			sales_invoice.insert(ignore_permissions=True)
-			sales_invoice.save()
+			#res.calculate_taxes_and_totals()
+			#sales_invoice.save()
 
 	def submit_all_invoice(self):
 		for d in self.created_sales_invoice_using_pos_tool:
@@ -84,3 +93,22 @@ def insert_data(doctype, name):
 		name,status,taxes_and_charges,grand_total=i['name'],i['status'],i['taxes_and_charges'],i['grand_total']
 		li.append([name,status,taxes_and_charges,grand_total])
 	return li
+
+@frappe.whitelist()
+def getTax1(name):
+	doc=frappe.get_doc("Sales Taxes and Charges Template",name)
+	tax=[]
+	for row in doc.taxes:
+		tax_json={}
+		tax_json["account_head"]=row.account_head
+		tax_json["description"]=row.description
+		tax_json["charge_type"]=row.charge_type
+		tax_json["rate"]=row.rate
+		tax.append(tax_json)
+	return tax
+
+@frappe.whitelist()
+def getTax(sales_invoice):
+	taxes = get_taxes_and_charges('Sales Taxes and Charges Template',sales_invoice.taxes_and_charges)
+	for tax in taxes:
+		sales_invoice.append('taxes', tax)
