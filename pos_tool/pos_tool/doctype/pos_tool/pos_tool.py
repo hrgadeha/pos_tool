@@ -41,7 +41,7 @@ class POSTool(Document):
 					sales_invoice.calculate_taxes_and_totals()
 					sales_invoice.insert(ignore_permissions=True)
 					#calculate_taxes_and_totals()
-					#sales_invoice.save()
+					sales_invoice.save()
 					amount = d.rate
 					items = []
 			if(last_qty>0):
@@ -65,14 +65,14 @@ class POSTool(Document):
          		sales_invoice.calculate_taxes_and_totals()
 			sales_invoice.insert(ignore_permissions=True)
 			#res.calculate_taxes_and_totals()
-			#sales_invoice.save()
+			sales_invoice.save()
 
 	def submit_all_invoice(self):
 		for d in self.created_sales_invoice_using_pos_tool:
 			frappe.msgprint(frappe._("Sales Invoice {0} Submitted").format(d.sales_invoice))
 			sv = frappe.get_doc("Sales Invoice",d.sales_invoice)
 			sv.docstatus = 1
-			sv.save()
+			#sv.save()
 			sv.submit()
 
 @frappe.whitelist(allow_guest=True)
